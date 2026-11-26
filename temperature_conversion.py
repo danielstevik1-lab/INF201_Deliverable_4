@@ -1,87 +1,122 @@
-""" -----Temperature conversion----- """
+"""----- Temperature class -----"""
+class Temperature:
+    def __init__(self, value:float, unit:str)->None:
+        """Initializing temperature class with variables connected to self."""
+        self._value = float(value)
+        self._unit = unit.lower()
 
-class Temperature():
-    def __init__(self,value:float,unit:str,comp:str):
-        self.value = float(value)
-        self.unit = unit.lower()
-        self.comp = comp.lower()
+        if self.to_kelvin() < -self.TOLERANCE:
+            raise ValueError("Temperature below absolute zero.")
+        elif self.unit not in ("k", "kelvin", "c", "celsius", "f", "fahrenheit"):
+            raise ValueError("""
+            Enter valid unit.
+            Valid units:
+             -Kelvin = 'k'
+             -Celsius = 'c'
+             -Farenhheit = 'f'""" )
+        
+    TOLERANCE = 1e-9        #Comparison tolerance     
 
-        if self.to_kelvin() < 0:
-            raise ValueError("Temperature below absolute zero")
-        elif self.unit not in ("k", "c", "f", "kelvin", "celsius", "farenheit"):
-            raise ValueError("Enter valid unit. Valid units: kelvin/k, celsius/c or farenheit/f")
-
+    @property
+    def value(self):
+        return self._value
+    @property
+    def unit(self):
+        return self._unit
 
     def to_celsius(self)->float:
-        """Converts kelvin or farenheit to celsius"""
-        
+        """Converts kelvin or fahrenheit to celsius"""       
         if self.unit in ("k","kelvin"):
             return self.value -273.15
-        elif self.unit in ("f", "farenheit"):
+        elif self.unit in ("f", "fahrenheit"):
             return (self.value-32)*(5/9)
         else:
             return self.value
-        
-          
-
-
-    def to_farenheit(self)->float:
-        """ Converts kelvin or celsius to farenheit"""
-    
+            
+              
+    def to_fahrenheit(self)->float:
+        """ Converts kelvin or celsius to fahrenheit"""  
         if self.unit in("k", "kelvin"):
-            return (self.value -273)*(9/5)+32
+            return (self.value -273.15)*(9/5)+32
         elif self.unit in("c","celsius"):
             return (self.value *(9/5))+32
         else:
             return self.value
-        
-    
+            
 
     def to_kelvin(self)->float:
-        """ Converts celsius or farenheit to kelvin"""
-        
+        """ Converts celsius or fahrenheit to kelvin"""          
         if self.unit in("c","celsius"):
             return self.value + 273.15
-        elif self.unit in("f", "farenheit"):
+        elif self.unit in("f", "fahrenheit"):
             return (self.value-32)*(5/9) + 273.15
         else:
-            return self.value          
+            return self.value
 
+       
+        
+    def __eq__(self, other):
+        """Checks if equal, =="""
+        if not isinstance(other, Temperature):
+            return NotImplemented
+        
+        return abs(self.to_kelvin() - other.to_kelvin())<=self.TOLERANCE
 
-    def comparison(self, temp_a, temp_b, comp)->str:
-        """
-        Takes to temperatures and a comarison operator, returns the result.
-        Logic: Check if tempA is 'operator' than tempB.
-        Available comp-operators: ==, !=, <, <=,>, >=.
-        """
-        if comp == "==":
-            return "Temperature A and B are the same!" if temp_a == temp_b else "Temperature A and B are not the same!"
-            
-        elif comp == "!=":
-            return "Temperature A is different from Temperature B." if temp_a != temp_b else "Temperature A is the same as Temperature B." 
-            
-        elif comp == "<":
-            return "Temperature A is lower than Temperature B" if temp_a < temp_b else "Temperature A is higher than Temperature B"
-        elif comp == "<=":
-            return "Temperature A is equal or lower than Temperature B" if temp_a <= temp_b else "Temperature A is higher than Temperature B"
-        elif comp == ">":
-            return "Temperature A is higher than Temperature B" if temp_a > temp_b else "Temperature A is lower than Temperature B"
-        elif comp == ">=":
-            return "Temperature A is equal or higher than Temperature B" if temp_a >= temp_b else "Temperature A is lower than Temperature B"
+    def __ne__(self, other):
+        """Checks if not equal, !="""
+        if not isinstance(other, Temperature):
+            return NotImplemented
+        
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        """Checks if less than, <"""
+        if not isinstance(other, Temperature):
+            return NotImplemented
+        
+        return self.to_kelvin() < other.to_kelvin() +self.TOLERANCE
+
+    def __le__(self, other):
+        """Checks if less or equal, <="""
+        if not isinstance(other, Temperature):
+            return NotImplemented
+                
+        return self.to_kelvin() <= other.to_kelvin() +self.TOLERANCE
+
+    def __gt__(self, other):
+        """Checks if greater than, >="""
+        if not isinstance(other, Temperature):
+            return NotImplemented
+                
+        return self.to_kelvin() > other.to_kelvin() - self.TOLERANCE
+
+    def __ge__(self, other):
+        """Checks if greater or equal, >="""
+        if not isinstance(other, Temperature):
+            return NotImplemented
+                        
+        return self.to_kelvin() >= other.to_kelvin() - self.TOLERANCE
+    
+    
+
+    def convert_to(self,target_unit:str)->"Temperature":
+        """Takes temperature of specific unit and converts it to a target unit"""
+        target_unit = target_unit.lower()
+
+        if target_unit in ("c", "celsius"):
+            return Temperature(self.to_celsius(), "c")
+        elif target_unit in("f", "fahrenheit"):
+            return Temperature(self.to_fahrenheit(),"f")
+        elif target_unit in ("k", "kelvin"):
+            return Temperature(self.to_kelvin(),"k")
         else:
-            raise ValueError("Enter valid operators: ==, !=, <, <=, >, >=")
-
-
-
+            raise ValueError("Invalid target unit")
+    
+    
+    
     def __repr__(self)->str:
         return f"Temperature({self.value},'{self.unit}')"
-
-
+        
     def __str__(self)->str:
-        return f"{self.value:.2f}°{self.unit}"        
-
-
-temp1= Temperature(300,"K")
-temp2 = Temperature(98,"f")
-temp3 = Temperature(-27.0,"c")
-print(f"{temp3.to_celsius():.2f}")
+        return f"{self.value:.2f} °{self.unit.upper()}"        
+    
